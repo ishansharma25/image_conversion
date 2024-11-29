@@ -5,11 +5,11 @@ const cloudinary = require('cloudinary').v2;
 const { PythonShell } = require('python-shell');
 
 // Configure Cloudinary with your account details
-cloudinary.config({
-    cloud_name: "",
-    api_key: "",
-    api_secret: ""
-});
+cloudinary.config(
+  cloud_name= "dfad2oppz",
+  api_key= "562573676845481",
+  api_secret="0M_QJ_phoJotcnteN1lmBTd7NZA"
+)
 
 
 
