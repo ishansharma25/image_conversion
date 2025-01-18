@@ -3,309 +3,145 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Processor</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>Image Processing</title>
     <style>
-        * {
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
-        body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            min-height: 100vh;
-            padding: 40px 20px;
-        }
-
         .container {
             max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin: 50px auto;
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
-
         h1 {
-            color: #2d3748;
             text-align: center;
-            margin-bottom: 30px;
-            font-size: 2.5em;
-            font-weight: 600;
+            color: #4CAF50;
+            margin-bottom: 20px;
         }
-
         .form-group {
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
-
         label {
             display: block;
+            font-weight: bold;
             margin-bottom: 8px;
-            color: #4a5568;
-            font-weight: 500;
         }
-
+        input[type="file"],
         input[type="email"] {
             width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: all 0.3s ease;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
         }
-
-        input[type="email"]:focus {
-            outline: none;
-            border-color: #4299e1;
-            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
-        }
-
-        .file-upload {
-            background: #f7fafc;
-            border: 2px dashed #cbd5e0;
-            border-radius: 10px;
-            padding: 30px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .file-upload:hover {
-            border-color: #4299e1;
-            background: #ebf8ff;
-        }
-
-        .file-upload i {
-            font-size: 48px;
-            color: #4299e1;
-            margin-bottom: 15px;
-        }
-
-        .file-upload p {
-            color: #718096;
-            margin-bottom: 0;
-        }
-
-        .hidden-input {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            cursor: pointer;
-        }
-
         button {
+            display: block;
             width: 100%;
-            padding: 15px;
-            background: #4299e1;
-            color: white;
-            border: none;
-            border-radius: 10px;
+            padding: 10px;
             font-size: 16px;
-            font-weight: 600;
+            color: #fff;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 4px;
             cursor: pointer;
-            transition: all 0.3s ease;
         }
-
         button:hover {
-            background: #3182ce;
-            transform: translateY(-2px);
+            background-color: #45a049;
         }
-
-        .preview-image {
-            max-width: 100%;
-            border-radius: 10px;
+        #status {
             margin-top: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .result-container {
-            margin-top: 30px;
-            padding: 20px;
-            border-radius: 10px;
-            background: #f7fafc;
-            border: 1px solid #e2e8f0;
-        }
-
-        .result-container h2 {
-            color: #2d3748;
-            margin-bottom: 15px;
-        }
-
-        .result-container p {
-            color: #4a5568;
-            margin-bottom: 10px;
-            line-height: 1.6;
-        }
-
-        .success-icon {
-            color: #48bb78;
-            margin-right: 8px;
-        }
-
-        .email-icon {
-            color: #4299e1;
-            margin-right: 8px;
-        }
-
-        .loading {
-            display: none;
+            padding: 10px;
+            border-radius: 4px;
             text-align: center;
+        }
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+        img {
+            max-width: 100%;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        #result h3 {
             margin-top: 20px;
         }
-
-        .loading i {
-            color: #4299e1;
-            font-size: 24px;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .file-upload.drag-over {
-            background: #ebf8ff;
-            border-color: #4299e1;
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            font-size: 14px;
+            color: #777;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Image Processor</h1>
-        <form id="uploadForm" enctype="multipart/form-data">
+        <h1>Image Processing</h1>
+        <form id="uploadForm">
             <div class="form-group">
-                <label for="imageInput">Upload Image</label>
-                <div class="file-upload" id="dropZone">
-                    <i class="fas fa-cloud-upload-alt"></i>
-                    <p>Drag and drop your image here or click to browse</p>
-                    <input type="file" name="image" id="imageInput" accept="image/*" class="hidden-input">
-                </div>
+                <label for="image">Select Image:</label>
+                <input type="file" id="image" name="image" accept="image/*" required>
             </div>
             <div class="form-group">
-                <label for="emailInput">Your Email</label>
-                <input type="email" id="emailInput" required placeholder="Enter your email address">
+                <label for="email">Your Email:</label>
+                <input type="email" id="email" name="email" placeholder="example@example.com" required>
             </div>
-            <button type="submit">
-                <i class="fas fa-process"></i> Process Image
-            </button>
+            <button type="submit">Upload & Process</button>
         </form>
-
-        <div id="imagePreview"></div>
-        <div id="loading" class="loading">
-            <i class="fas fa-spinner"></i>
-            <p>Processing your image...</p>
-        </div>
-        <div id="result" class="result-container" style="display: none;"></div>
+        <div id="status"></div>
+        <div id="result"></div>
     </div>
+    <footer>
+        &copy; 2025 Image Processor. All rights reserved.
+    </footer>
 
     <script>
-        const dropZone = document.getElementById('dropZone');
-        const fileInput = document.getElementById('imageInput');
-
-        // Handle both click and drag/drop
-        dropZone.addEventListener('click', () => {
-            fileInput.click();
-        });
-
-        // Drag and drop functionality
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, preventDefaults, false);
-        });
-
-        function preventDefaults(e) {
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            e.stopPropagation();
-        }
-
-        ['dragenter', 'dragover'].forEach(eventName => {
-            dropZone.addEventListener(eventName, highlight, false);
-        });
-
-        ['dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, unhighlight, false);
-        });
-
-        function highlight(e) {
-            dropZone.classList.add('drag-over');
-        }
-
-        function unhighlight(e) {
-            dropZone.classList.remove('drag-over');
-        }
-
-        dropZone.addEventListener('drop', handleDrop, false);
-
-        function handleDrop(e) {
-            const dt = e.dataTransfer;
-            const files = dt.files;
-            fileInput.files = files;
-            handleFileSelect(files[0]);
-        }
-
-        // Preview image before upload
-        fileInput.addEventListener('change', function(event) {
-            handleFileSelect(event.target.files[0]);
-        });
-
-        function handleFileSelect(file) {
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const preview = document.getElementById('imagePreview');
-                    preview.innerHTML = `<img src="${e.target.result}" class="preview-image" alt="Preview">`;
-                }
-                reader.readAsDataURL(file);
-            }
-        }
-
-        // Handle form submission
-        document.getElementById('uploadForm').addEventListener('submit', async function(event) {
-            event.preventDefault();
+            const status = document.getElementById('status');
+            const result = document.getElementById('result');
             
             const formData = new FormData();
-            const imageFile = fileInput.files[0];
-            const email = document.getElementById('emailInput').value;
-            
-            if (!imageFile || !email) {
-                alert('Please select an image and enter your email');
-                return;
-            }
+            formData.append('image', document.getElementById('image').files[0]);
+            formData.append('email', document.getElementById('email').value);
 
-            // Show loading state
-            document.getElementById('loading').style.display = 'block';
-            console.log(imageFile)
-            formData.append('image', imageFile);
-            formData.append('email', email);
-            
+            status.innerHTML = 'Processing... Please wait.';
+            status.className = '';
+
             try {
                 const response = await fetch('/upload', {
                     method: 'POST',
                     body: formData
                 });
-                
                 const data = await response.json();
-                const resultDiv = document.getElementById('result');
-                resultDiv.style.display = 'block';
-                resultDiv.innerHTML = `
-                    <h2>Processing Results</h2>
-                    <p><i class="fas fa-check-circle success-icon"></i> Image uploaded and processed successfully</p>
-                    <p><i class="fas fa-envelope email-icon"></i> Email sent to: ${email}</p>
-                    <h3>Processed Image:</h3>
-                    <img src="${data.imageUrl}" class="preview-image" alt="Processed Image">
-                    <p>Processing details: ${data.processingResults.join(', ')}</p>
-                `;
+
+                if (response.ok) {
+                    status.innerHTML = 'Success! Check your email for the processed image.';
+                    status.className = 'success';
+                    result.innerHTML = `
+                        <h3>Original Image:</h3>
+                        <img src="${data.originalImageUrl}" alt="Original">
+                        <h3>Processed Image:</h3>
+                        <img src="${data.processedImageUrl}" alt="Processed">
+                    `;
+                } else {
+                    throw new Error(data.error || 'Failed to process the image.');
+                }
             } catch (error) {
-                console.error('Error:', error);
-                alert('An error occurred while processing your request');
-            } finally {
-                document.getElementById('loading').style.display = 'none';
+                status.innerHTML = `Error: ${error.message}`;
+                status.className = 'error';
             }
         });
     </script>

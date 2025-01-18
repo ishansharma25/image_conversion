@@ -1,119 +1,82 @@
-'''import sys
-import cv2 as cv
-import numpy as np
-from cloudinary.uploader import upload
-
-# Function to resize image
-def resize_image(image_url):
-    try:
-        # Download image from Cloudinary
-        img = cv.imread(image_url)
-        if img is None:
-            print("Error: Unable to download image from Cloudinary.")
-            return None
-
-        scale = 0.75
-        width = int(img.shape[1] * scale)
-        height = int(img.shape[0] * scale)
-        dsize = (width, height)
-        resized_img = cv.resize(img, dsize, interpolation=cv.INTER_CUBIC)
-
-        # Upload resized image back to Cloudinary
-        _, encoded_img = cv.imencode('.jpg', resized_img)
-        result = upload(encoded_img.tobytes())
-        if 'secure_url' in result:
-            return result['secure_url']
-        else:
-            print("Error: Failed to upload resized image to Cloudinary.")
-            return None
-    except Exception as e:
-        print("Error:", e)
-        return None
-
-# Main function
-if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python resize_image.py <image_url>")
-        sys.exit(1)
-    
-    image_url = sys.argv[1]
-    processed_image_url = resize_image(image_url)
-    if processed_image_url:
-        print("Processed image URL:", processed_image_url)
-    else:
-        print("Failed to process image.").'''
-
-
 import sys
 import cv2 as cv
 import numpy as np
 import requests
 import cloudinary
 from cloudinary.uploader import upload
-from cloudinary.uploader import upload
+from dotenv import load_dotenv
+import os
 
-# Function to resize and convert image to black and white
+# Load environment variables
+load_dotenv()
+
+# Configure Cloudinary
 cloudinary.config(
-  cloud_name= "dfad2oppz",
-  api_key= "562573676845481",
-  api_secret="0M_QJ_phoJotcnteN1lmBTd7NZA"
+    cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
+    api_key=os.getenv('CLOUDINARY_API_KEY'),
+    api_secret=os.getenv('CLOUDINARY_API_SECRET')
 )
-def resize_and_convert_to_bw(image_url):
+
+def process_image(image_url):
+    """
+    Download image from URL, resize it, convert to grayscale, and upload to Cloudinary
+    """
     try:
-        # Download image from Cloudinary
+        # Download image
         resp = requests.get(image_url)
         if resp.status_code != 200:
-            print("Error: Unable to download image from Cloudinary.")
+            print("Error: Unable to download image.")
             return None
 
-        # Convert downloaded content to numpy array
+        # Convert downloaded content to image
         img_array = np.frombuffer(resp.content, np.uint8)
-
-        # Read the image
         img = cv.imdecode(img_array, cv.IMREAD_COLOR)
+        if img is None:
+            print("Error: Unable to decode image.")
+            return None
 
         # Resize image
         scale = 0.75
         width = int(img.shape[1] * scale)
         height = int(img.shape[0] * scale)
-        dsize = (width, height)
-        resized_img = cv.resize(img, dsize, interpolation=cv.INTER_CUBIC)
+        resized_img = cv.resize(img, (width, height), interpolation=cv.INTER_CUBIC)
 
-        # Convert image to black and white
+        # Convert to grayscale
         gray_img = cv.cvtColor(resized_img, cv.COLOR_BGR2GRAY)
-        _, encoded_img = cv.imencode('.jpg', gray_img)
-        response = upload(encoded_img.tobytes(), folder="processed_images")
-        if 'secure_url' in response:
-            return response['secure_url']
-        else:
-            print("Error: Failed to upload processed image to Cloudinary.")
+
+        # Ensure the image is in grayscale format before encoding
+        # Create a temporary file to save the grayscale image
+        temp_filename = 'temp_gray.jpg'
+        cv.imwrite(temp_filename, gray_img)
+
+        # Upload the grayscale image to Cloudinary
+        with open(temp_filename, 'rb') as f:
+            response = upload(
+                f,
+                folder="processed_images",
+                resource_type="image"
+            )
+
+        # Clean up temporary file
+        os.remove(temp_filename)
+
+        if 'secure_url' not in response:
+            print("Error: Failed to upload to Cloudinary.")
             return None
 
-        # Display the resized and converted image
-        cv.imshow('Resized and Converted to BW', gray_img)
-        cv.waitKey(0)
-        cv.destroyAllWindows()
+        return response['secure_url']
 
-        # # Upload processed image back to Cloudinary
-        # _, encoded_img = cv.imencode('.jpg', gray_img)
-        # result = upload(encoded_img.tobytes())
-        # if 'secure_url' in result:
-        #     return result['secure_url']
-        # else:
-        #     print("Error: Failed to upload processed image to Cloudinary.")
-        #     return None
     except Exception as e:
-        print("Error:", e)
+        print(f"Error processing image: {str(e)}")
         return None
+
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print("Usage: python resize_and_convert_to_bw.py <image_url>")
+        print("Usage: python image_processor.py <image_url>")
         sys.exit(1)
     
-    image_url = sys.argv[1]
-    processed_image_url = resize_and_convert_to_bw(image_url)
-    if processed_image_url:
-        print("Processed image URL:", processed_image_url)
+    processed_url = process_image(sys.argv[1])
+    if processed_url:
+        print("Processed image URL:", processed_url)
     else:
         print("Failed to process image.")
-
